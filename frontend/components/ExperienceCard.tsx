@@ -2,11 +2,16 @@ import Link from "next/link";
 import type { ExperienceCard as Card } from "@/lib/types";
 import { formatPrice } from "@/lib/api";
 import { formatCount, pseudoRating } from "@/lib/ratings";
+import { displayPricing } from "@/lib/pricing";
 import { SmartImage } from "./SmartImage";
 
 export function ExperienceCard({ experience }: { experience: Card }) {
   const cover = experience.gallery?.[0];
   const { rating, reviews, topRated } = pseudoRating(experience.id);
+  const pricing =
+    experience.fromPrice !== null
+      ? displayPricing(experience.id, experience.fromPrice)
+      : null;
 
   return (
     <Link
@@ -47,7 +52,12 @@ export function ExperienceCard({ experience }: { experience: Card }) {
 
         <div className="mt-auto pt-3 text-sm">
           <span className="text-muted">From </span>
-          <span className="font-bold text-ink">
+          {pricing && (
+            <del className="text-muted">
+              {formatPrice(pricing.original, experience.currency ?? "INR")}
+            </del>
+          )}{" "}
+          <span className="font-bold text-brand">
             {formatPrice(experience.fromPrice, experience.currency ?? "INR")}
           </span>
           <span className="text-muted"> per person</span>

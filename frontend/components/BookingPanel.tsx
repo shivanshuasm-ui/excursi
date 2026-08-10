@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatPrice } from "@/lib/api";
+import { displayPricing } from "@/lib/pricing";
 import type { Option } from "@/lib/types";
 
 export function BookingPanel({
@@ -27,8 +28,10 @@ export function BookingPanel({
     [option],
   );
   const seats = adults + kids;
-  const total = option ? Number(option.price) * seats : 0;
+  const unitPrice = option ? Number(option.price) : 0;
+  const total = unitPrice * seats;
   const currency = option?.currency ?? "INR";
+  const pricing = displayPricing(option?.id ?? slug, unitPrice);
   const canContinue = Boolean(option && slotId && seats > 0);
 
   function onContinue() {
@@ -49,15 +52,27 @@ export function BookingPanel({
 
   return (
     <div>
-      {/* Price header */}
-      <div className="flex items-end justify-between">
+      {/* Price header (GYG-style: struck original + discounted price) */}
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-sm text-muted">From</p>
-          <p className="text-2xl font-extrabold text-ink">
-            {formatPrice(option?.price ?? null, currency)}
+          <p className="text-sm text-muted">
+            From{" "}
+            <del className="text-muted">
+              {formatPrice(pricing.original, currency)}
+            </del>
           </p>
+          <div className="flex items-end gap-2">
+            <span className="text-2xl font-extrabold text-brand">
+              {formatPrice(pricing.discounted, currency)}
+            </span>
+            <span className="pb-1 text-sm text-muted">per person</span>
+          </div>
         </div>
-        <span className="pb-1 text-sm text-muted">per person</span>
+        {pricing.save > 0 && (
+          <span className="mt-0.5 shrink-0 rounded-md bg-discount/10 px-2 py-1 text-xs font-bold text-discount">
+            Save {pricing.save}%
+          </span>
+        )}
       </div>
 
       <hr className="my-4 border-line" />
