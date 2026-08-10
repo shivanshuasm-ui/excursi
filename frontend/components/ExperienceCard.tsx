@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ExperienceCard as Card } from "@/lib/types";
 import { formatPrice } from "@/lib/api";
 import { formatCount, pseudoRating } from "@/lib/ratings";
+import { SmartImage } from "./SmartImage";
 
 export function ExperienceCard({ experience }: { experience: Card }) {
   const cover = experience.gallery?.[0];
@@ -12,21 +13,16 @@ export function ExperienceCard({ experience }: { experience: Card }) {
       href={`/experience/${experience.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:shadow-pop"
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-        {cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={cover}
-            alt={experience.title}
-            className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-slate-300">
-            No image
-          </div>
-        )}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        <SmartImage
+          src={cover}
+          alt={experience.title}
+          seed={experience.id}
+          className="h-full w-full"
+          imgClassName="transition duration-300 group-hover:scale-105"
+        />
         {topRated && (
-          <span className="badge-dark absolute left-3 top-3 shadow-card">
+          <span className="badge-dark absolute left-3 top-3 z-10 shadow-card">
             Top rated
           </span>
         )}

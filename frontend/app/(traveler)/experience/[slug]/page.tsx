@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getExperience } from "@/lib/api";
 import { BookingPanel } from "@/components/BookingPanel";
+import { SmartImage } from "@/components/SmartImage";
 import { formatCount, pseudoRating } from "@/lib/ratings";
 
 // ISR: detail pages are generated on demand and revalidated (Phase 2 decision).
@@ -65,31 +66,26 @@ export default async function ExperiencePage({
       <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_349px]">
         <div className="min-w-0">
           {/* Gallery */}
-          {gallery.length > 0 && (
-            <div className="grid h-[380px] grid-cols-3 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
-              {/* eslint-disable @next/next/no-img-element */}
-              <img
-                src={gallery[0]}
-                alt={experience.title}
-                className="col-span-2 row-span-2 h-full w-full object-cover"
-              />
-              {gallery[1] && (
-                <img
-                  src={gallery[1]}
-                  alt={`${experience.title} 2`}
-                  className="h-full w-full object-cover"
-                />
-              )}
-              {gallery[2] && (
-                <img
-                  src={gallery[2]}
-                  alt={`${experience.title} 3`}
-                  className="h-full w-full object-cover"
-                />
-              )}
-              {/* eslint-enable @next/next/no-img-element */}
-            </div>
-          )}
+          <div className="grid h-[380px] grid-cols-3 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
+            <SmartImage
+              src={gallery[0]}
+              alt={experience.title}
+              seed={`${experience.id}-0`}
+              className="col-span-2 row-span-2 h-full w-full"
+            />
+            <SmartImage
+              src={gallery[1]}
+              alt={`${experience.title} photo 2`}
+              seed={`${experience.id}-1`}
+              className="h-full w-full"
+            />
+            <SmartImage
+              src={gallery[2]}
+              alt={`${experience.title} photo 3`}
+              seed={`${experience.id}-2`}
+              className="h-full w-full"
+            />
+          </div>
 
           {/* Overview */}
           <section className="mt-8">
