@@ -16,40 +16,53 @@ import { createOptionSchema } from "../validators/option.schema.js";
 
 const router = Router();
 
-// All routes here are operator-scoped. Operator reads only need a profile;
-// writes additionally require an APPROVED operator.
-router.use(authenticate, asyncHandler(loadOperator));
+// Middleware chains. Reads need an operator profile; writes need it APPROVED.
+const asOperator = [authenticate, asyncHandler(loadOperator)];
+const asApprovedOperator = [...asOperator, requireApprovedOperator];
 
-// Reads (own experiences). Literal `/mine` is declared before `/:id`-style
-// public routes that Phase 2 will add.
-router.get("/mine", asyncHandler(experienceController.listMine));
-router.get("/mine/:id", asyncHandler(experienceController.getOne));
+// ── Public (traveler) ───────────────────────────────────────────────────────
+// GET "/" is exact; GET "/:slug" is registered LAST so the literal operator
+// routes ("/mine", "/mine/:id") and all writes take precedence.
+router.get("/", asyncHandler(experienceController.listPublic));
 
-// Writes.
+// ── Operator: reads ──────────────────────────────────────────────────────────
+router.get(
+  "/mine",
+  ...asOperator,
+  asyncHandler(experienceController.listMine),
+);
+router.get(
+  "/mine/:id",
+  ...asOperator,
+  asyncHandler(experienceController.getOne),
+);
+
+// ── Operator: writes (require APPROVED) ──────────────────────────────────────
 router.post(
   "/",
-  requireApprovedOperator,
+  ...asApprovedOperator,
   validateBody(createExperienceSchema),
   asyncHandler(experienceController.create),
 );
 router.put(
   "/:id",
-  requireApprovedOperator,
+  ...asApprovedOperator,
   validateBody(updateExperienceSchema),
   asyncHandler(experienceController.update),
 );
 router.delete(
   "/:id",
-  requireApprovedOperator,
+  ...asApprovedOperator,
   asyncHandler(experienceController.remove),
 );
-
-// Options nested under an experience.
 router.post(
   "/:id/options",
-  requireApprovedOperator,
+  ...asApprovedOperator,
   validateBody(createOptionSchema),
   asyncHandler(optionController.create),
 );
+
+// ── Public detail (must be last: single-segment GET catch-all) ───────────────
+router.get("/:slug", asyncHandler(experienceController.getBySlug));
 
 export default router;
