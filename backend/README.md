@@ -7,6 +7,7 @@ Node.js + Express + Prisma API for Excursi.
 - **Phase 2** — traveler-facing public catalog: search/filter listing, detail
   by slug, categories.
 - **Phase 3** — booking flow (transactional, no-overbook) + Razorpay payments.
+- **Phase 4** — operator dashboard: booking management (Phase 3) + earnings/payouts summary.
 
 ## Setup
 
@@ -63,6 +64,7 @@ flip `operators.status` directly).
 | POST   | `/api/operators/signup`           | —                   | Creates User(OPERATOR) + PENDING profile |
 | GET    | `/api/operators/me`               | Operator            | Own operator profile                   |
 | PUT    | `/api/operators/me`               | Operator            | Update business name / description      |
+| GET    | `/api/operators/me/earnings`      | Operator            | Earnings & payouts summary (Phase 4)   |
 | POST   | `/api/experiences`                | Operator (approved) | Create experience (auto-slug, DRAFT)   |
 | GET    | `/api/experiences/mine`           | Operator            | List own experiences (+ options)       |
 | GET    | `/api/experiences/mine/:id`       | Operator            | Own experience detail (+ options/slots)|
@@ -175,6 +177,32 @@ Razorpay API and verify real signatures. Signature check is
 
 > Follow-up: a webhook endpoint and an expiry sweeper for abandoned PENDING
 > reservations (they hold seats until cancelled) are not yet implemented.
+
+## Operator earnings (Phase 4)
+
+`GET /api/operators/me/earnings` returns a dashboard summary. Revenue is
+recognised only from **PAID** bookings; the platform keeps
+`PLATFORM_COMMISSION_RATE` (default 15%) and the operator's net is the rest.
+
+- **Pending payout** — net of `CONFIRMED` bookings (paid, experience not yet delivered).
+- **Available payout** — net of `COMPLETED` bookings (delivered, payable).
+- **Refunded** — amount of `REFUNDED` payments (cancelled after payment), reported separately.
+
+```json
+{
+  "currency": "INR",
+  "commissionRate": 0.15,
+  "totals":   { "gross": 3000, "commission": 450, "net": 2550, "refunded": 1000 },
+  "payouts":  { "pending": 1700, "available": 850 },
+  "bookings": { "total": 4, "pending": 1, "confirmed": 1, "completed": 1, "cancelled": 1 },
+  "byExperience": [
+    { "experienceId": "...", "title": "Dive Trip", "bookings": 2, "gross": 3000, "net": 2550 }
+  ]
+}
+```
+
+Aggregation runs in-memory over the operator's bookings (MVP scale) and assumes
+a single currency.
 
 ## Structure
 

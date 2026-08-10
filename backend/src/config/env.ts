@@ -26,6 +26,11 @@ export const env = {
     keyId: process.env.RAZORPAY_KEY_ID,
     keySecret: process.env.RAZORPAY_KEY_SECRET,
   },
+  platform: {
+    // Commission the platform keeps from each paid booking; operator payout is
+    // the remainder. 0.15 = 15%.
+    commissionRate: Number(process.env.PLATFORM_COMMISSION_RATE ?? 0.15),
+  },
 } as const;
 
 export const isProd = env.nodeEnv === "production";

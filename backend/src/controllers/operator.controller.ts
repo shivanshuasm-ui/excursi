@@ -21,3 +21,9 @@ export async function update(req: Request, res: Response) {
   );
   res.status(200).json({ operator });
 }
+
+export async function earnings(req: Request, res: Response) {
+  if (!req.operator) throw ApiError.forbidden();
+  const summary = await operatorService.getOperatorEarnings(req.operator.id);
+  res.status(200).json(summary);
+}

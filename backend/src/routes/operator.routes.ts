@@ -32,4 +32,12 @@ router.put(
   asyncHandler(operatorController.update),
 );
 
+router.get(
+  "/me/earnings",
+  authenticate,
+  asyncHandler(loadOperator),
+  asyncHandler(operatorController.earnings),
+);
+
 export default router;
+
