@@ -12,7 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed:admin": "tsx src/scripts/seedAdmin.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test --test-concurrency=1 test/integration.test.ts"
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
