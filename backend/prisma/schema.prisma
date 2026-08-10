@@ -1,0 +1,210 @@
+// Excursi — Prisma schema
+// Images: URLs only in JSON fields (gallery), never binary in DB.
+// Availability: TimeSlot.availableCapacity is the source of truth; decrement
+// inside a transaction/row-lock on booking confirm — never overbook.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────
+
+enum Role {
+  TRAVELER
+  OPERATOR
+  ADMIN
+}
+
+enum OperatorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ExperienceStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SlotType {
+  ONE_OFF
+  RECURRING
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─── Identity ───────────────────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role      @default(TRAVELER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  operator Operator?
+  bookings Booking[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Operator {
+  id           String         @id @default(cuid())
+  userId       String         @unique
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName String
+  description  String?
+  status       OperatorStatus @default(PENDING)
+  verifiedAt   DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  experiences Experience[]
+
+  @@index([status])
+  @@map("operators")
+}
+
+// ─── Catalog ──────────────────────────────────────────────────────────────
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+
+  experiences Experience[]
+
+  @@map("categories")
+}
+
+model Experience {
+  id          String           @id @default(cuid())
+  operatorId  String
+  operator    Operator         @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  title       String
+  slug        String           @unique
+  description String
+  destination String?
+  itinerary   Json?            // structured day/step list
+  inclusions  Json?            // list of strings
+  gallery     Json?            // list of image URLs (never binary)
+  status      ExperienceStatus @default(DRAFT)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  options  Option[]
+  bookings Booking[]
+
+  @@index([status])
+  @@index([operatorId])
+  @@index([categoryId])
+  @@map("experiences")
+}
+
+model Option {
+  id              String     @id @default(cuid())
+  experienceId    String
+  experience      Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  name            String
+  price           Decimal    @db.Decimal(10, 2)
+  currency        String     @default("INR")
+  capacity        Int
+  durationMinutes Int
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  slots    TimeSlot[]
+  bookings Booking[]
+
+  @@index([experienceId])
+  @@map("options")
+}
+
+model TimeSlot {
+  id                String   @id @default(cuid())
+  optionId          String
+  option            Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  type              SlotType @default(ONE_OFF)
+  startTime         DateTime
+  endTime           DateTime
+  totalCapacity     Int
+  availableCapacity Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  bookings Booking[]
+
+  @@index([optionId, startTime])
+  @@map("time_slots")
+}
+
+// ─── Transactions ───────────────────────────────────────────────────────────
+
+model Booking {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experienceId String
+  experience   Experience    @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  optionId     String
+  option       Option        @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  slotId       String
+  slot         TimeSlot      @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  adults       Int           @default(1)
+  kids         Int           @default(0)
+  totalAmount  Decimal       @db.Decimal(10, 2)
+  currency     String        @default("INR")
+  status       BookingStatus @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  payment Payment?
+
+  @@index([userId])
+  @@index([slotId])
+  @@index([status])
+  @@map("bookings")
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  bookingId  String        @unique
+  booking    Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider   String        @default("razorpay")
+  orderId    String?
+  paymentId  String?
+  signature  String?
+  amount     Decimal       @db.Decimal(10, 2)
+  currency   String        @default("INR")
+  status     PaymentStatus @default(CREATED)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([status])
+  @@map("payments")
+}
