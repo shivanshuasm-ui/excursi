@@ -8,6 +8,7 @@ Node.js + Express + Prisma API for Excursi.
   by slug, categories.
 - **Phase 3** — booking flow (transactional, no-overbook) + Razorpay payments.
 - **Phase 4** — operator dashboard: booking management (Phase 3) + earnings/payouts summary.
+- **Phase 5** — admin panel: operator verification, platform bookings/stats, category management.
 
 ## Setup
 
@@ -31,6 +32,7 @@ npm run dev                   # start on http://localhost:4000
 | `npm run prisma:generate` | Generate the Prisma client                   |
 | `npm run prisma:migrate`  | Create and apply a dev migration             |
 | `npm run prisma:studio`   | Open Prisma Studio                           |
+| `npm run seed:admin`      | Seed/promote the platform admin (env-driven) |
 
 ## Auth API
 
@@ -203,6 +205,40 @@ recognised only from **PAID** bookings; the platform keeps
 
 Aggregation runs in-memory over the operator's bookings (MVP scale) and assumes
 a single currency.
+
+## Admin API (Phase 5)
+
+Every route requires an authenticated `ADMIN`. Admins are **never** self-
+registered — seed one with `npm run seed:admin` (`ADMIN_EMAIL` / `ADMIN_PASSWORD`);
+the script is idempotent and promotes an existing user to `ADMIN` if needed.
+
+| Method | Path                                   | Notes                                   |
+|--------|----------------------------------------|-----------------------------------------|
+| GET    | `/api/admin/operators/pending`         | Operator verification queue             |
+| PATCH  | `/api/admin/operators/:id/verify`      | Body `{ "action": "approve" \| "reject" }` |
+| GET    | `/api/admin/bookings`                  | Platform-wide bookings (`?status=`, `?page=`, `?limit=`) |
+| GET    | `/api/admin/stats`                     | Platform dashboard counts + revenue     |
+| POST   | `/api/admin/categories`                | Create category (auto-slug from name)   |
+| PUT    | `/api/admin/categories/:id`            | Update category                         |
+| DELETE | `/api/admin/categories/:id`            | Delete (experiences fall back to null)  |
+
+Approving an operator sets `APPROVED` + `verifiedAt` and unlocks catalog writes
+(the gate enforced in Phase 1); rejecting sets `REJECTED` and clears `verifiedAt`.
+
+`GET /api/admin/stats` returns:
+
+```json
+{
+  "users":       { "total": 3, "TRAVELER": 1, "OPERATOR": 1, "ADMIN": 1 },
+  "operators":   { "total": 1, "PENDING": 0, "APPROVED": 1, "REJECTED": 0 },
+  "experiences": { "total": 2, "DRAFT": 1, "PUBLISHED": 1, "ARCHIVED": 0 },
+  "bookings":    { "total": 3, "PENDING": 1, "CONFIRMED": 2, "COMPLETED": 0, "CANCELLED": 0 },
+  "revenue":     { "currency": "INR", "gross": 6000, "commission": 900, "commissionRate": 0.15 }
+}
+```
+
+Revenue counts only PAID bookings that are CONFIRMED or COMPLETED; `commission`
+is the platform's cut at `PLATFORM_COMMISSION_RATE`.
 
 ## Structure
 

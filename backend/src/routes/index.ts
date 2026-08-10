@@ -6,6 +6,7 @@ import optionRoutes from "./option.routes.js";
 import categoryRoutes from "./category.routes.js";
 import bookingRoutes from "./booking.routes.js";
 import paymentRoutes from "./payment.routes.js";
+import adminRoutes from "./admin.routes.js";
 
 const router = Router();
 
@@ -16,7 +17,6 @@ router.use("/options", optionRoutes);
 router.use("/categories", categoryRoutes);
 router.use("/bookings", bookingRoutes);
 router.use("/payments", paymentRoutes);
-
-// Future route groups (per architecture): admin.
+router.use("/admin", adminRoutes);
 
 export default router;
