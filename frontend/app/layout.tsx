@@ -19,14 +19,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50">
+      <body className="min-h-screen bg-white">
         <AuthProvider>
           <Header />
           <main>{children}</main>
-          <footer className="mt-16 border-t border-slate-200 bg-white">
-            <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-500">
-              © {new Date().getFullYear()} excursi. Experiences by independent
-              operators.
+          <footer className="mt-16 border-t border-line bg-[var(--bg-subtle)]">
+            <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-10 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+              <span className="font-extrabold text-ink">excursi</span>
+              <span>
+                © {new Date().getFullYear()} excursi. Experiences by independent
+                operators.
+              </span>
             </div>
           </footer>
         </AuthProvider>

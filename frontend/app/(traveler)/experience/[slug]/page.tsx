@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getExperience } from "@/lib/api";
 import { BookingPanel } from "@/components/BookingPanel";
+import { formatCount, pseudoRating } from "@/lib/ratings";
 
 // ISR: detail pages are generated on demand and revalidated (Phase 2 decision).
 export const revalidate = 120;
@@ -36,67 +37,81 @@ export default async function ExperiencePage({
   if (!experience) notFound();
 
   const gallery = experience.gallery ?? [];
+  const { rating, reviews, topRated } = pseudoRating(experience.id);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      {/* Header */}
-      <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-        {experience.category && (
-          <span className="font-medium text-brand">
-            {experience.category.name}
+    <div className="mx-auto max-w-6xl px-4 py-6">
+      {/* Title */}
+      <h1 className="text-2xl font-extrabold leading-tight text-ink sm:text-3xl">
+        {experience.title}
+      </h1>
+
+      {/* Badge + rating row */}
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        {topRated && <span className="badge-dark">Top rated</span>}
+        <span className="flex items-center gap-1 text-sm">
+          <span className="rating-star">★</span>
+          <span className="font-bold text-ink">{rating}</span>
+          <span className="text-brand underline-offset-2 hover:underline">
+            ({formatCount(reviews)} reviews)
           </span>
+        </span>
+        {experience.destination && (
+          <span className="text-sm text-muted">· {experience.destination}</span>
         )}
-        {experience.destination && <span>· {experience.destination}</span>}
       </div>
-      <h1 className="text-3xl font-bold text-slate-900">{experience.title}</h1>
-      <p className="mt-1 text-sm text-slate-500">
-        by {experience.operator.businessName}
-      </p>
 
-      {/* Gallery */}
-      {gallery.length > 0 && (
-        <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-3">
-          {gallery.slice(0, 3).map((url, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={i}
-              src={url}
-              alt={`${experience.title} ${i + 1}`}
-              className={`w-full rounded-xl object-cover ${
-                i === 0 ? "sm:col-span-2 sm:row-span-2 aspect-video" : "aspect-square"
-              }`}
-            />
-          ))}
-        </div>
-      )}
+      {/* Grid: gallery + content | sticky booking widget */}
+      <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_349px]">
+        <div className="min-w-0">
+          {/* Gallery */}
+          {gallery.length > 0 && (
+            <div className="grid h-[380px] grid-cols-3 grid-rows-2 gap-2 overflow-hidden rounded-2xl">
+              {/* eslint-disable @next/next/no-img-element */}
+              <img
+                src={gallery[0]}
+                alt={experience.title}
+                className="col-span-2 row-span-2 h-full w-full object-cover"
+              />
+              {gallery[1] && (
+                <img
+                  src={gallery[1]}
+                  alt={`${experience.title} 2`}
+                  className="h-full w-full object-cover"
+                />
+              )}
+              {gallery[2] && (
+                <img
+                  src={gallery[2]}
+                  alt={`${experience.title} 3`}
+                  className="h-full w-full object-cover"
+                />
+              )}
+              {/* eslint-enable @next/next/no-img-element */}
+            </div>
+          )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-3">
-        {/* Left: description, itinerary, inclusions */}
-        <div className="lg:col-span-2">
-          <section>
-            <h2 className="text-lg font-semibold text-slate-900">Overview</h2>
-            <p className="mt-2 whitespace-pre-line text-slate-700">
+          {/* Overview */}
+          <section className="mt-8">
+            <h2 className="text-xl font-bold text-ink">Overview</h2>
+            <p className="mt-2 whitespace-pre-line leading-relaxed text-slate-700">
               {experience.description}
             </p>
           </section>
 
           {experience.itinerary && experience.itinerary.length > 0 && (
             <section className="mt-8">
-              <h2 className="text-lg font-semibold text-slate-900">Itinerary</h2>
-              <ol className="mt-3 space-y-3">
+              <h2 className="text-xl font-bold text-ink">Itinerary</h2>
+              <ol className="mt-4 space-y-4 border-l-2 border-line pl-6">
                 {experience.itinerary.map((step, i) => (
-                  <li key={i} className="flex gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
+                  <li key={i} className="relative">
+                    <span className="absolute -left-[31px] grid h-6 w-6 place-items-center rounded-full bg-brand text-xs font-bold text-white">
                       {i + 1}
                     </span>
-                    <div>
-                      <p className="font-medium text-slate-900">{step.title}</p>
-                      {step.description && (
-                        <p className="text-sm text-slate-600">
-                          {step.description}
-                        </p>
-                      )}
-                    </div>
+                    <p className="font-semibold text-ink">{step.title}</p>
+                    {step.description && (
+                      <p className="text-sm text-muted">{step.description}</p>
+                    )}
                   </li>
                 ))}
               </ol>
@@ -105,27 +120,26 @@ export default async function ExperiencePage({
 
           {experience.inclusions && experience.inclusions.length > 0 && (
             <section className="mt-8">
-              <h2 className="text-lg font-semibold text-slate-900">
-                What's included
-              </h2>
+              <h2 className="text-xl font-bold text-ink">What's included</h2>
               <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {experience.inclusions.map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-slate-700">
-                    <span className="text-brand">✓</span>
+                    <span className="text-discount">✓</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </section>
           )}
+
+          <p className="mt-8 text-xs text-muted">
+            Offered by {experience.operator.businessName}
+          </p>
         </div>
 
-        {/* Right: booking panel */}
-        <aside className="lg:col-span-1">
-          <div className="sticky top-4 rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="mb-3 text-lg font-semibold text-slate-900">
-              Book this experience
-            </h2>
+        {/* Sticky booking widget */}
+        <aside>
+          <div className="sticky top-24 rounded-2xl border border-line bg-white p-5 shadow-card">
             <BookingPanel slug={experience.slug} options={experience.options} />
           </div>
         </aside>

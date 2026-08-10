@@ -37,14 +37,14 @@ export default async function SearchPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-slate-900">
+      <h1 className="mb-6 text-2xl font-extrabold text-ink">
         Explore experiences
       </h1>
 
       <SearchFilters categories={categories} />
 
       <div className="mt-6 flex items-center justify-between">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm font-semibold text-muted">
           {failed
             ? "Could not load experiences."
             : `${pagination.total} result${pagination.total === 1 ? "" : "s"}`}
@@ -59,7 +59,7 @@ export default async function SearchPage({
         </div>
       ) : (
         !failed && (
-          <p className="mt-4 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+          <p className="mt-4 rounded-2xl border border-dashed border-line bg-white p-8 text-center text-muted">
             No experiences match your filters.
           </p>
         )
@@ -100,10 +100,10 @@ function Pagination({
         <Link
           key={page}
           href={href(page)}
-          className={`min-w-9 rounded-md border px-3 py-1.5 text-center text-sm ${
+          className={`min-w-9 rounded-lg border px-3 py-1.5 text-center text-sm font-semibold ${
             page === current
               ? "border-brand bg-brand text-white"
-              : "border-slate-200 bg-white text-slate-700 hover:border-brand"
+              : "border-line bg-white text-ink hover:border-brand"
           }`}
         >
           {page}

@@ -102,11 +102,11 @@ export function Checkout() {
 
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
-      <h1 className="text-2xl font-bold text-slate-900">Review & pay</h1>
+      <h1 className="text-2xl font-extrabold text-ink">Review & pay</h1>
 
-      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="font-semibold text-slate-900">{experience.title}</h2>
-        <p className="text-sm text-slate-500">
+      <div className="mt-6 rounded-2xl border border-line bg-white p-5 shadow-card">
+        <h2 className="font-bold text-ink">{experience.title}</h2>
+        <p className="text-sm text-muted">
           {experience.operator.businessName}
         </p>
 
@@ -125,9 +125,9 @@ export function Checkout() {
           />
         </dl>
 
-        <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-          <span className="font-medium text-slate-700">Total</span>
-          <span className="text-xl font-bold text-slate-900">
+        <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
+          <span className="font-semibold text-muted">Total</span>
+          <span className="text-xl font-extrabold text-ink">
             {formatPrice(total, currency)}
           </span>
         </div>
@@ -142,7 +142,7 @@ export function Checkout() {
       {!authLoading && !user ? (
         <Link
           href={`/login?next=${encodeURIComponent(nextUrl)}`}
-          className="mt-6 block w-full rounded-md bg-brand px-4 py-3 text-center font-medium text-white hover:bg-brand-dark"
+          className="btn-brand mt-6 w-full"
         >
           Sign in to complete booking
         </Link>
@@ -151,12 +151,12 @@ export function Checkout() {
           type="button"
           onClick={pay}
           disabled={paying || authLoading}
-          className="mt-6 w-full rounded-md bg-brand px-4 py-3 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
+          className="btn-brand mt-6 w-full"
         >
           {paying ? "Processing…" : `Pay ${formatPrice(total, currency)}`}
         </button>
       )}
-      <p className="mt-3 text-center text-xs text-slate-400">
+      <p className="mt-3 text-center text-xs text-muted">
         Your seats are held the moment you confirm — no double bookings.
       </p>
     </div>
@@ -166,8 +166,8 @@ export function Checkout() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="font-medium text-slate-800">{value}</dd>
+      <dt className="text-muted">{label}</dt>
+      <dd className="font-semibold text-ink">{value}</dd>
     </div>
   );
 }

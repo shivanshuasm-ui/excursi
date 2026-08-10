@@ -40,13 +40,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-2xl font-bold text-slate-900">
+      <h1 className="text-2xl font-extrabold text-ink">
         {isSignup ? "Create your account" : "Welcome back"}
       </h1>
-      <p className="mt-1 text-sm text-slate-500">
-        {isSignup
-          ? "Sign up to book experiences."
-          : "Sign in to continue."}
+      <p className="mt-1 text-sm text-muted">
+        {isSignup ? "Sign up to book experiences." : "Sign in to continue."}
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -82,16 +80,12 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-md bg-brand px-4 py-2.5 font-medium text-white hover:bg-brand-dark disabled:opacity-60"
-        >
+        <button type="submit" disabled={busy} className="btn-brand w-full">
           {busy ? "Please wait…" : isSignup ? "Sign up" : "Sign in"}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-slate-500">
+      <p className="mt-4 text-center text-sm text-muted">
         {isSignup ? (
           <>
             Already have an account?{" "}
@@ -137,18 +131,16 @@ function Input({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">
-        {label}
-      </span>
+      <span className="mb-1 block text-sm font-semibold text-ink">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
         minLength={minLength}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+        className="field"
       />
-      {hint && <span className="mt-1 block text-xs text-slate-400">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
   );
 }

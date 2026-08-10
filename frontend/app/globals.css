@@ -3,14 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --brand: #ff5533;
+  --brand-dark: #e63f16;
+  --ink: #05203c;
+  --muted: #5a6c7a;
+  --line: #e4e9ed;
+  --bg: #ffffff;
+  --bg-subtle: #f5f7f8;
+  --discount: #1a7a4c;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--ink);
+  background: var(--bg);
   font-family:
+    "Inter",
     system-ui,
     -apple-system,
     "Segoe UI",
@@ -18,4 +30,27 @@ body {
     Helvetica,
     Arial,
     sans-serif;
+}
+
+@layer components {
+  /* Primary coral button (GYG "Check availability") */
+  .btn-brand {
+    @apply inline-flex items-center justify-center rounded-lg bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center rounded-lg border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-ink/40;
+  }
+
+  /* Dark pill badge ("Top rated") */
+  .badge-dark {
+    @apply inline-flex items-center rounded-md bg-ink px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-white;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20;
+  }
+
+  .rating-star {
+    color: var(--brand);
+  }
 }

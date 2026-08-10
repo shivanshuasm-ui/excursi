@@ -15,6 +15,8 @@ const STATUS_STYLES: Record<BookingStatus, string> = {
   CANCELLED: "bg-red-100 text-red-700",
 };
 
+// (status pill colors kept semantic; layout uses the GYG palette below)
+
 export function MyBookings() {
   const { user, loading: authLoading } = useAuth();
   const params = useSearchParams();
@@ -64,11 +66,8 @@ export function MyBookings() {
   if (!authLoading && !user) {
     return (
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
-        <p className="text-slate-600">Please sign in to see your bookings.</p>
-        <Link
-          href="/login?next=/my-bookings"
-          className="mt-4 inline-block rounded-md bg-brand px-4 py-2 font-medium text-white hover:bg-brand-dark"
-        >
+        <p className="text-muted">Please sign in to see your bookings.</p>
+        <Link href="/login?next=/my-bookings" className="btn-brand mt-4">
           Sign in
         </Link>
       </div>
@@ -77,7 +76,7 @@ export function MyBookings() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="text-2xl font-bold text-slate-900">My bookings</h1>
+      <h1 className="text-2xl font-extrabold text-ink">My bookings</h1>
 
       {justBooked && (
         <p className="mt-4 rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -93,9 +92,9 @@ export function MyBookings() {
       {loading ? (
         <p className="mt-8 text-slate-500">Loading…</p>
       ) : bookings.length === 0 ? (
-        <div className="mt-8 rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
-          <p className="text-slate-500">You have no bookings yet.</p>
-          <Link href="/search" className="mt-2 inline-block font-medium text-brand">
+        <div className="mt-8 rounded-2xl border border-dashed border-line bg-white p-8 text-center">
+          <p className="text-muted">You have no bookings yet.</p>
+          <Link href="/search" className="mt-2 inline-block font-bold text-brand">
             Explore experiences →
           </Link>
         </div>
@@ -104,20 +103,20 @@ export function MyBookings() {
           {bookings.map((b) => (
             <li
               key={b.id}
-              className="rounded-xl border border-slate-200 bg-white p-4"
+              className="rounded-2xl border border-line bg-white p-4 shadow-card"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <Link
                     href={`/experience/${b.experience.slug}`}
-                    className="font-semibold text-slate-900 hover:text-brand"
+                    className="font-bold text-ink hover:text-brand"
                   >
                     {b.experience.title}
                   </Link>
-                  <p className="mt-0.5 text-sm text-slate-500">
+                  <p className="mt-0.5 text-sm text-muted">
                     {b.option.name} · {formatDateTime(b.slot.startTime)}
                   </p>
-                  <p className="mt-0.5 text-sm text-slate-500">
+                  <p className="mt-0.5 text-sm text-muted">
                     {b.adults} adult{b.adults > 1 ? "s" : ""}
                     {b.kids > 0 ? `, ${b.kids} kid${b.kids > 1 ? "s" : ""}` : ""}{" "}
                     · {formatPrice(b.totalAmount, b.currency)}
@@ -137,7 +136,7 @@ export function MyBookings() {
                       type="button"
                       onClick={() => cancel(b.id)}
                       disabled={cancelling === b.id}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                      className="btn-outline disabled:opacity-60"
                     >
                       {cancelling === b.id ? "Cancelling…" : "Cancel booking"}
                     </button>

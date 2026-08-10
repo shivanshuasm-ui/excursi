@@ -31,7 +31,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
 
   return (
     <form
-      className="grid gap-4 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3"
+      className="grid gap-4 rounded-2xl border border-line bg-white p-4 shadow-card sm:grid-cols-2 lg:grid-cols-3"
       onSubmit={(e) => e.preventDefault()}
     >
       <Field label="Search">
@@ -40,7 +40,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
           defaultValue={value("q")}
           placeholder="Kayaking, food tour…"
           onBlur={(e) => update({ q: e.target.value })}
-          className="input"
+          className="field"
         />
       </Field>
 
@@ -50,7 +50,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
           defaultValue={value("destination")}
           placeholder="Goa, Rishikesh…"
           onBlur={(e) => update({ destination: e.target.value })}
-          className="input"
+          className="field"
         />
       </Field>
 
@@ -58,7 +58,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
         <select
           defaultValue={value("category")}
           onChange={(e) => update({ category: e.target.value })}
-          className="input"
+          className="field"
         >
           <option value="">All categories</option>
           {categories.map((c) => (
@@ -74,7 +74,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
           type="date"
           defaultValue={value("date")}
           onChange={(e) => update({ date: e.target.value })}
-          className="input"
+          className="field"
         />
       </Field>
 
@@ -86,7 +86,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
             placeholder="Min"
             defaultValue={value("minPrice")}
             onBlur={(e) => update({ minPrice: e.target.value })}
-            className="input"
+            className="field"
           />
           <span className="text-slate-400">–</span>
           <input
@@ -95,7 +95,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
             placeholder="Max"
             defaultValue={value("maxPrice")}
             onBlur={(e) => update({ maxPrice: e.target.value })}
-            className="input"
+            className="field"
           />
         </div>
       </Field>
@@ -104,7 +104,7 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
         <select
           defaultValue={value("sort") || "newest"}
           onChange={(e) => update({ sort: e.target.value })}
-          className="input"
+          className="field"
         >
           {SORTS.map((s) => (
             <option key={s.value} value={s.value}>
@@ -113,21 +113,6 @@ export function SearchFilters({ categories }: { categories: Category[] }) {
           ))}
         </select>
       </Field>
-
-      <style jsx>{`
-        :global(.input) {
-          width: 100%;
-          border-radius: 0.5rem;
-          border: 1px solid rgb(203 213 225);
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          outline: none;
-        }
-        :global(.input:focus) {
-          border-color: #0d9488;
-          box-shadow: 0 0 0 1px #0d9488;
-        }
-      `}</style>
     </form>
   );
 }
@@ -141,7 +126,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium text-slate-600">
+      <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-muted">
         {label}
       </span>
       {children}

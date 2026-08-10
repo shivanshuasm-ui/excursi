@@ -23,28 +23,47 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-brand to-brand-dark">
-        <div className="mx-auto max-w-6xl px-4 py-20 text-center text-white">
-          <h1 className="text-4xl font-bold sm:text-5xl">
-            Find your next experience
+      <section className="relative overflow-hidden bg-ink">
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            background:
+              "radial-gradient(120% 120% at 80% 0%, #ff5533 0%, transparent 45%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-24">
+          <h1 className="max-w-2xl text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+            Find and book unforgettable experiences
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-teal-50">
-            Tours, activities, and local adventures from trusted operators.
+          <p className="mt-4 max-w-xl text-lg text-slate-200">
+            Tours, activities, and local adventures from trusted operators —
+            with free cancellation.
           </p>
           <form
             action="/search"
-            className="mx-auto mt-8 flex max-w-md gap-2"
+            className="mt-8 flex max-w-xl items-center gap-2 rounded-full bg-white p-2 shadow-pop"
           >
-            <input
-              type="text"
-              name="q"
-              placeholder="Search experiences…"
-              className="flex-1 rounded-md px-4 py-3 text-slate-900 outline-none"
-            />
-            <button
-              type="submit"
-              className="rounded-md bg-slate-900 px-5 py-3 font-medium text-white hover:bg-slate-800"
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              className="ml-2 text-muted"
             >
+              <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+              <path
+                d="m20 20-3-3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <input
+              name="q"
+              placeholder="Search experiences or destinations…"
+              className="w-full bg-transparent px-1 text-ink outline-none placeholder:text-muted"
+            />
+            <button type="submit" className="btn-brand rounded-full px-6">
               Search
             </button>
           </form>
@@ -54,12 +73,13 @@ export default async function HomePage() {
       {/* Categories */}
       {categories.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 py-10">
+          <h2 className="mb-4 text-lg font-bold text-ink">Browse by category</h2>
           <div className="flex flex-wrap gap-2">
             {categories.map((c) => (
               <Link
                 key={c.id}
                 href={`/search?category=${c.slug}`}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-brand hover:text-brand"
+                className="rounded-full border border-line bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand"
               >
                 {c.name}
               </Link>
@@ -71,10 +91,13 @@ export default async function HomePage() {
       {/* Featured */}
       <section className="mx-auto max-w-6xl px-4 pb-16">
         <div className="mb-6 flex items-baseline justify-between">
-          <h2 className="text-2xl font-bold text-slate-900">
-            Featured experiences
+          <h2 className="text-2xl font-extrabold text-ink">
+            Popular experiences
           </h2>
-          <Link href="/search" className="text-sm font-medium text-brand">
+          <Link
+            href="/search"
+            className="text-sm font-bold text-brand hover:underline"
+          >
             View all →
           </Link>
         </div>
@@ -85,7 +108,7 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <p className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">
+          <p className="rounded-2xl border border-dashed border-line bg-white p-8 text-center text-muted">
             No experiences published yet. Check back soon.
           </p>
         )}
