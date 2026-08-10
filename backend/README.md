@@ -1,7 +1,9 @@
 # excursi-backend
 
-Node.js + Express + Prisma API for Excursi. Phase 0: scaffold, database schema,
-and JWT auth.
+Node.js + Express + Prisma API for Excursi.
+
+- **Phase 0** — scaffold, database schema, JWT auth.
+- **Phase 1** — operator signup/profile + Experience / Option / TimeSlot CRUD.
 
 ## Setup
 
@@ -44,7 +46,34 @@ access token as `Authorization: Bearer <token>` on protected routes.
 - `requireRole(...roles)` — gates a route to `TRAVELER` / `OPERATOR` / `ADMIN`.
 
 Signup only mints `TRAVELER` accounts. Operators register via
-`POST /api/operators/signup` (Phase 1) and admins are seeded.
+`POST /api/operators/signup` and admins are seeded.
+
+## Operator API (Phase 1)
+
+Operators register through their own endpoint and start as `PENDING`. They can
+log in and edit their profile immediately, but **creating or modifying catalog
+data requires an `APPROVED` operator** (admin approval lands in Phase 5; for now
+flip `operators.status` directly).
+
+| Method | Path                              | Auth                | Notes                                  |
+|--------|-----------------------------------|---------------------|----------------------------------------|
+| POST   | `/api/operators/signup`           | —                   | Creates User(OPERATOR) + PENDING profile |
+| GET    | `/api/operators/me`               | Operator            | Own operator profile                   |
+| PUT    | `/api/operators/me`               | Operator            | Update business name / description      |
+| POST   | `/api/experiences`                | Operator (approved) | Create experience (auto-slug, DRAFT)   |
+| GET    | `/api/experiences/mine`           | Operator            | List own experiences (+ options)       |
+| GET    | `/api/experiences/mine/:id`       | Operator            | Own experience detail (+ options/slots)|
+| PUT    | `/api/experiences/:id`            | Operator (approved) | Partial update; set `status` to publish|
+| DELETE | `/api/experiences/:id`            | Operator (approved) | Delete own experience (cascades)       |
+| POST   | `/api/experiences/:id/options`    | Operator (approved) | Add an option/package                  |
+| PUT    | `/api/options/:id`                | Operator (approved) | Update an option                       |
+| POST   | `/api/options/:id/slots`          | Operator (approved) | Add a time slot (capacity seeds availability) |
+| GET    | `/api/options/:id/slots?date=`    | Public              | List slots; optional `YYYY-MM-DD` filter |
+
+Ownership is enforced on every write: an operator can only touch experiences,
+options, and slots under experiences they own (cross-operator access → 403).
+Publishing is a status transition — `PUT /api/experiences/:id` with
+`{ "status": "PUBLISHED" }`.
 
 ## Structure
 
