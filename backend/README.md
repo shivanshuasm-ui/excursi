@@ -6,6 +6,7 @@ Node.js + Express + Prisma API for Excursi.
 - **Phase 1** — operator signup/profile + Experience / Option / TimeSlot CRUD.
 - **Phase 2** — traveler-facing public catalog: search/filter listing, detail
   by slug, categories.
+- **Phase 3** — booking flow (transactional, no-overbook) + Razorpay payments.
 
 ## Setup
 
@@ -126,6 +127,54 @@ the option relation — fine at MVP scale; revisit with a denormalized
 the literal operator routes (`/mine`, `/mine/:id`) and all writes are registered
 **before** the public single-segment `GET /:slug`, so the slug catch-all never
 shadows them.
+
+## Bookings & Payments (Phase 3)
+
+| Method | Path                          | Auth      | Notes                                    |
+|--------|-------------------------------|-----------|------------------------------------------|
+| POST   | `/api/bookings`               | User      | Reserve seats; creates PENDING booking   |
+| GET    | `/api/bookings/me`            | User      | Traveler's own bookings                  |
+| GET    | `/api/bookings/operator`      | Operator  | Bookings across own experiences (`?status=`) |
+| PATCH  | `/api/bookings/:id/status`    | User      | Traveler cancels own; operator completes/cancels |
+| POST   | `/api/payments/create-order`  | User      | Create a Razorpay order for a booking    |
+| POST   | `/api/payments/verify`        | User      | Verify signature → CONFIRMED + PAID      |
+
+### Booking lifecycle
+
+```
+POST /bookings          reserve seats atomically, booking=PENDING, payment=CREATED
+POST /payments/create-order   create provider order (amount in paise)
+POST /payments/verify   HMAC check -> booking=CONFIRMED, payment=PAID
+PATCH /bookings/:id/status    COMPLETED (operator) or CANCELLED (either)
+```
+
+**No overbooking.** Seats are reserved when the booking is created, not at
+payment. The reservation is a single conditional update —
+`UPDATE time_slots SET availableCapacity = availableCapacity - :seats
+WHERE id = :id AND availableCapacity >= :seats` — which takes a Postgres row
+lock, so concurrent bookings serialize and the loser's `WHERE` fails (409)
+instead of driving capacity negative. Booking + payment rows are created in the
+same transaction. Verified with a concurrency test (3 simultaneous bookings on a
+2-seat slot → exactly 2 succeed, capacity floors at 0).
+
+Cancelling a booking that still holds capacity (PENDING/CONFIRMED) releases the
+seats back and refunds a paid payment, all in one transaction. COMPLETED
+bookings keep their seats consumed.
+
+Pricing: option price is **per seat** (`adults + kids`); kids are priced the
+same as adults for now.
+
+### Payments — mock mode
+
+With `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` unset, payments run in a local
+**mock mode**: `create-order` returns a synthetic `order_mock_…` id and
+signatures are HMAC'd with a fixed mock secret, so the full book → pay → confirm
+flow is testable without live keys. Set the two env vars to hit the real
+Razorpay API and verify real signatures. Signature check is
+`HMAC_SHA256(orderId + "|" + paymentId, keySecret)`, compared constant-time.
+
+> Follow-up: a webhook endpoint and an expiry sweeper for abandoned PENDING
+> reservations (they hold seats until cancelled) are not yet implemented.
 
 ## Structure
 

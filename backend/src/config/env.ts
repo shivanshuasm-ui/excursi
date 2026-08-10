@@ -21,6 +21,11 @@ export const env = {
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? "15m",
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? "7d",
   },
+  razorpay: {
+    // Optional. When unset, payments run in a local mock mode (see lib/payments).
+    keyId: process.env.RAZORPAY_KEY_ID,
+    keySecret: process.env.RAZORPAY_KEY_SECRET,
+  },
 } as const;
 
 export const isProd = env.nodeEnv === "production";

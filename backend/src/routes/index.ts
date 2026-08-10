@@ -4,6 +4,8 @@ import operatorRoutes from "./operator.routes.js";
 import experienceRoutes from "./experience.routes.js";
 import optionRoutes from "./option.routes.js";
 import categoryRoutes from "./category.routes.js";
+import bookingRoutes from "./booking.routes.js";
+import paymentRoutes from "./payment.routes.js";
 
 const router = Router();
 
@@ -12,7 +14,9 @@ router.use("/operators", operatorRoutes);
 router.use("/experiences", experienceRoutes);
 router.use("/options", optionRoutes);
 router.use("/categories", categoryRoutes);
+router.use("/bookings", bookingRoutes);
+router.use("/payments", paymentRoutes);
 
-// Future route groups (per architecture): bookings, payments, admin.
+// Future route groups (per architecture): admin.
 
 export default router;
