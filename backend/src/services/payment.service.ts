@@ -1,6 +1,8 @@
+import crypto from "node:crypto";
 import { prisma } from "../lib/prisma.js";
 import { ApiError } from "../utils/ApiError.js";
 import {
+  computeMockSignature,
   createProviderOrder,
   paymentsConfigured,
   publicKeyId,
@@ -53,6 +55,7 @@ export async function createOrder(userId: string, input: CreateOrderInput) {
     amount: order.amount,
     currency: order.currency,
     keyId: publicKeyId(),
+    provider: paymentsConfigured ? "razorpay" : "mock",
   };
 }
 
@@ -109,5 +112,42 @@ export async function verifyPayment(userId: string, input: VerifyPaymentInput) {
       data: { status: "CONFIRMED" },
     });
     return { booking: confirmed, payment };
+  });
+}
+
+/**
+ * Dev-only shortcut: simulate a successful payment when Razorpay is not
+ * configured (mock mode). The frontend can't produce a valid signature — that
+ * needs the server secret — so this computes one server-side and runs the same
+ * verify path. Disabled whenever real Razorpay keys are set.
+ */
+export async function mockConfirm(userId: string, input: CreateOrderInput) {
+  if (paymentsConfigured) {
+    throw ApiError.badRequest(
+      "Mock payment is disabled; complete the Razorpay checkout instead",
+    );
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: input.bookingId },
+    include: { payment: true },
+  });
+  if (!booking) {
+    throw ApiError.notFound("Booking not found");
+  }
+  if (booking.userId !== userId) {
+    throw ApiError.forbidden("Not your booking");
+  }
+  if (!booking.payment?.orderId) {
+    throw ApiError.badRequest("Create a payment order first");
+  }
+
+  const paymentId = `pay_mock_${crypto.randomUUID().replace(/-/g, "").slice(0, 14)}`;
+  const signature = computeMockSignature(booking.payment.orderId, paymentId);
+  return verifyPayment(userId, {
+    bookingId: booking.id,
+    razorpayOrderId: booking.payment.orderId,
+    razorpayPaymentId: paymentId,
+    razorpaySignature: signature,
   });
 }

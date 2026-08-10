@@ -140,8 +140,9 @@ shadows them.
 | GET    | `/api/bookings/me`            | User      | Traveler's own bookings                  |
 | GET    | `/api/bookings/operator`      | Operator  | Bookings across own experiences (`?status=`) |
 | PATCH  | `/api/bookings/:id/status`    | User      | Traveler cancels own; operator completes/cancels |
-| POST   | `/api/payments/create-order`  | User      | Create a Razorpay order for a booking    |
+| POST   | `/api/payments/create-order`  | User      | Create a Razorpay order (response includes `provider`) |
 | POST   | `/api/payments/verify`        | User      | Verify signature → CONFIRMED + PAID      |
+| POST   | `/api/payments/mock-confirm`  | User      | Dev-only: simulate success in mock mode (disabled when Razorpay keys are set) |
 
 ### Booking lifecycle
 

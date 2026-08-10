@@ -23,4 +23,12 @@ router.post(
   asyncHandler(paymentController.verify),
 );
 
+// Dev-only: simulate payment success in mock mode (no Razorpay keys).
+router.post(
+  "/mock-confirm",
+  authenticate,
+  validateBody(createOrderSchema),
+  asyncHandler(paymentController.mockConfirm),
+);
+
 export default router;

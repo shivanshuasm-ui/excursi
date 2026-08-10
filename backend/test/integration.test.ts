@@ -205,6 +205,30 @@ describe("booking + payment", () => {
     assert.equal(verify.json.payment.status, "PAID");
   });
 
+  it("confirms via mock-confirm (no signature needed by the client)", async () => {
+    const b = await req("POST", "/bookings", {
+      token: state.travTok,
+      body: { slotId: state.slotId, adults: 1 },
+    });
+    const order = await req("POST", "/payments/create-order", {
+      token: state.travTok,
+      body: { bookingId: b.json.booking.id },
+    });
+    assert.equal(order.json.provider, "mock");
+    const confirm = await req("POST", "/payments/mock-confirm", {
+      token: state.travTok,
+      body: { bookingId: b.json.booking.id },
+    });
+    assert.equal(confirm.status, 200);
+    assert.equal(confirm.json.booking.status, "CONFIRMED");
+    assert.equal(confirm.json.payment.status, "PAID");
+    // Clean up so later capacity/earnings assertions stay deterministic.
+    await req("PATCH", `/bookings/${b.json.booking.id}/status`, {
+      token: state.travTok,
+      body: { status: "CANCELLED" },
+    });
+  });
+
   it("rejects a tampered signature", async () => {
     const b = await req("POST", "/bookings", {
       token: state.travTok,
@@ -308,7 +332,8 @@ describe("operator earnings", () => {
     assert.equal(e.totals.commission, 150);
     assert.equal(e.totals.net, 850);
     assert.equal(e.payouts.available, 850);
-    assert.equal(e.totals.refunded, 3000);
+    // Two cancelled-after-pay bookings were refunded: 3000 + the 1000 mock-confirm one.
+    assert.equal(e.totals.refunded, 4000);
   });
 
   it("forbids travelers from operator earnings", async () => {

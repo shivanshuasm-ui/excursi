@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { formatPrice, getExperience } from "@/lib/api";
-import type { Option } from "@/lib/types";
+import { getExperience } from "@/lib/api";
+import { BookingPanel } from "@/components/BookingPanel";
 
 // ISR: detail pages are generated on demand and revalidated (Phase 2 decision).
 export const revalidate = 120;
@@ -120,82 +120,16 @@ export default async function ExperiencePage({
           )}
         </div>
 
-        {/* Right: options + slots */}
+        {/* Right: booking panel */}
         <aside className="lg:col-span-1">
           <div className="sticky top-4 rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Choose an option
+            <h2 className="mb-3 text-lg font-semibold text-slate-900">
+              Book this experience
             </h2>
-            {experience.options.length > 0 ? (
-              <ul className="mt-3 space-y-3">
-                {experience.options.map((option) => (
-                  <OptionRow key={option.id} option={option} />
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-3 text-sm text-slate-500">
-                No options available yet.
-              </p>
-            )}
+            <BookingPanel slug={experience.slug} options={experience.options} />
           </div>
         </aside>
       </div>
     </div>
   );
-}
-
-function OptionRow({ option }: { option: Option }) {
-  const upcoming = option.slots.slice(0, 3);
-  return (
-    <li className="rounded-lg border border-slate-200 p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-medium text-slate-900">{option.name}</p>
-          <p className="text-xs text-slate-500">
-            {option.durationMinutes} min
-          </p>
-        </div>
-        <p className="font-semibold text-slate-900">
-          {formatPrice(option.price, option.currency)}
-        </p>
-      </div>
-
-      {upcoming.length > 0 ? (
-        <div className="mt-2 flex flex-wrap gap-1">
-          {upcoming.map((slot) => (
-            <span
-              key={slot.id}
-              className={`rounded border px-2 py-0.5 text-xs ${
-                slot.availableCapacity > 0
-                  ? "border-slate-200 text-slate-600"
-                  : "border-slate-100 text-slate-300 line-through"
-              }`}
-            >
-              {formatDate(slot.startTime)}
-            </span>
-          ))}
-        </div>
-      ) : (
-        <p className="mt-2 text-xs text-slate-400">No upcoming dates</p>
-      )}
-
-      <button
-        type="button"
-        className="mt-3 w-full rounded-md bg-brand px-3 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-      >
-        Select
-      </button>
-    </li>
-  );
-}
-
-function formatDate(iso: string): string {
-  try {
-    return new Intl.DateTimeFormat("en-IN", {
-      day: "numeric",
-      month: "short",
-    }).format(new Date(iso));
-  } catch {
-    return iso.slice(0, 10);
-  }
 }

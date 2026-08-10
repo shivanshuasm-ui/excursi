@@ -77,3 +77,48 @@ export interface ExperienceFilters {
   sort?: string;
   page?: string;
 }
+
+export type Role = "TRAVELER" | "OPERATOR" | "ADMIN";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  role: Role;
+}
+
+export interface AuthResponse {
+  user: AuthUser;
+  accessToken: string;
+  refreshToken: string;
+}
+
+export type BookingStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELLED";
+
+export interface MyBooking {
+  id: string;
+  adults: number;
+  kids: number;
+  totalAmount: string;
+  currency: string;
+  status: BookingStatus;
+  createdAt: string;
+  experience: { title: string; slug: string };
+  option: { name: string; durationMinutes: number };
+  slot: { startTime: string; endTime: string };
+  payment: { status: string; provider: string } | null;
+}
+
+export interface CreateOrderResponse {
+  bookingId: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  keyId: string;
+  provider: "razorpay" | "mock";
+}

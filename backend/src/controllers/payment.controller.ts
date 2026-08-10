@@ -16,3 +16,8 @@ export async function verify(req: Request, res: Response) {
   const result = await paymentService.verifyPayment(userId(req), req.body);
   res.status(200).json(result);
 }
+
+export async function mockConfirm(req: Request, res: Response) {
+  const result = await paymentService.mockConfirm(userId(req), req.body);
+  res.status(200).json(result);
+}
